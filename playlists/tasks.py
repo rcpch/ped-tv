@@ -138,9 +138,11 @@ def _do_press(playlist) -> None:
         )
 
         # Save HLS manifest (segments are uploaded alongside)
+        # Pass only "{slug}/playlist.m3u8" — the field's upload_to="playlists/hls/"
+        # is prepended automatically, giving playlists/hls/{slug}/playlist.m3u8.
         _upload_hls_segments(playlist, hls_dir, slug)
         playlist.hls_manifest.save(
-            f"playlists/hls/{slug}/playlist.m3u8",
+            f"{slug}/playlist.m3u8",
             ContentFile(m3u8_path.read_bytes()),
             save=False,
         )
