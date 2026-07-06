@@ -58,55 +58,62 @@
 
     {# Current items #}
     <h2 class="nhsuk-heading-m">Playlist items</h2>
-    {% if items %}
-      <ul class="nhsuk-list" id="playlist-items">
-        {% for item in items %}
-          <li class="nhsuk-u-margin-bottom-2" style="display:flex;align-items:center;gap:1rem">
-            {% if item.media_item.thumbnail %}
-              <img src="{{ item.media_item.thumbnail.url }}" alt="" style="height:3rem;width:5rem;object-fit:cover">
-            {% else %}
-              <div style="height:3rem;width:5rem;background:#ccc;display:flex;align-items:center;justify-content:center;font-size:.75rem">
-                No thumb
-              </div>
-            {% endif %}
-            <span>
-              <strong>{{ item.media_item.title }}</strong><br>
-              <small>{{ item.media_item.get_media_type_display }} — {{ item.media_item.provider }}</small>
-            </span>
-            {% if item.media_item.is_image %}
-              {# Inline duration editor for images #}
-              <form method="post" style="display:flex;align-items:center;gap:.25rem;white-space:nowrap">
-                {% csrf_token %}
-                <input type="hidden" name="action" value="set_duration">
-                <input type="hidden" name="item_id" value="{{ item.pk }}">
-                <input class="nhsuk-input" type="number" name="duration" min="1"
-                       value="{{ item.duration|default:10 }}"
-                       style="width:4.5rem;padding:.3rem .5rem;font-size:.875rem"
-                       aria-label="Duration in seconds">
-                <span style="font-size:.875rem;color:#4c6272">s</span>
-                <button type="submit" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-bottom-0"
-                        style="padding:.3rem .6rem;font-size:.875rem">&#10003;</button>
-              </form>
-            {% else %}
-              <span style="font-size:.875rem;color:#4c6272;white-space:nowrap">
-                {{ item.media_item.video_duration|format_duration }}
+
+    <div id="playlist-drop-zone">
+      {% if items %}
+        <ul class="nhsuk-list" id="playlist-items">
+          {% for item in items %}
+            <li class="nhsuk-u-margin-bottom-2" data-item-id="{{ item.pk }}"
+                draggable="true"
+                style="display:flex;align-items:center;gap:.75rem">
+              <span class="drag-handle" aria-hidden="true" title="Drag to reorder">⠿</span>
+              {% if item.media_item.thumbnail %}
+                <img src="{{ item.media_item.thumbnail.url }}" alt="" style="height:3rem;width:5rem;object-fit:cover;flex-shrink:0">
+              {% else %}
+                <div style="height:3rem;width:5rem;background:#ccc;display:flex;align-items:center;justify-content:center;font-size:.75rem;flex-shrink:0">
+                  No thumb
+                </div>
+              {% endif %}
+              <span>
+                <strong>{{ item.media_item.title }}</strong><br>
+                <small>{{ item.media_item.get_media_type_display }} — {{ item.media_item.provider }}</small>
               </span>
-            {% endif %}
-            <form method="post" style="margin-left:auto">
-              {% csrf_token %}
-              <input type="hidden" name="action" value="remove_media">
-              <input type="hidden" name="item_id" value="{{ item.pk }}">
-              <button type="submit" class="nhsuk-button nhsuk-button--warning nhsuk-u-margin-bottom-0"
-                      style="padding:.25rem .5rem;font-size:.875rem">
-                Remove
-              </button>
-            </form>
-          </li>
-        {% endfor %}
-      </ul>
-    {% else %}
-      <p class="nhsuk-body">No media added yet.</p>
-    {% endif %}
+              {% if item.media_item.is_image %}
+                <form method="post" style="display:flex;align-items:center;gap:.25rem;white-space:nowrap">
+                  {% csrf_token %}
+                  <input type="hidden" name="action" value="set_duration">
+                  <input type="hidden" name="item_id" value="{{ item.pk }}">
+                  <input class="nhsuk-input" type="number" name="duration" min="1"
+                         value="{{ item.duration|default:10 }}"
+                         style="width:4.5rem;padding:.3rem .5rem;font-size:.875rem"
+                         aria-label="Duration in seconds">
+                  <span style="font-size:.875rem;color:#4c6272">s</span>
+                  <button type="submit" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-bottom-0"
+                          style="padding:.3rem .6rem;font-size:.875rem">&#10003;</button>
+                </form>
+              {% else %}
+                <span style="font-size:.875rem;color:#4c6272;white-space:nowrap">
+                  {{ item.media_item.video_duration|format_duration }}
+                </span>
+              {% endif %}
+              <form method="post" style="margin-left:auto">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="remove_media">
+                <input type="hidden" name="item_id" value="{{ item.pk }}">
+                <button type="submit" class="nhsuk-button nhsuk-button--warning nhsuk-u-margin-bottom-0"
+                        style="padding:.25rem .5rem;font-size:.875rem">
+                  Remove
+                </button>
+              </form>
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="nhsuk-body nhsuk-u-padding-3" style="border:2px dashed #adb5bd;border-radius:4px;text-align:center;color:#4c6272">
+          No media yet — drag items here from the provider panel below, or add them with the selector.
+        </p>
+      {% endif %}
+    </div>
 
     <hr class="nhsuk-section-break nhsuk-section-break--m nhsuk-section-break--visible">
 
@@ -143,4 +150,8 @@
 {% endblock %}
 {% block extra_head %}
 <script src="https://unpkg.com/htmx.org@2/dist/htmx.min.js" crossorigin="anonymous"></script>
+{% endblock %}
+{% block extra_js %}
+{% load static %}
+<script src="{% static 'js/playlist-dnd.js' %}"></script>
 {% endblock %}
