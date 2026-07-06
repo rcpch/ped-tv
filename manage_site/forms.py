@@ -17,21 +17,12 @@ class ProviderForm(forms.ModelForm):
 class MediaItemForm(forms.ModelForm):
     class Meta:
         model = MediaItem
-        fields = ["title", "media_type", "file", "provider", "duration"]
+        fields = ["title", "media_type", "file", "provider"]
         widgets = {
             "title": forms.TextInput(attrs={"class": "nhsuk-input"}),
             "media_type": forms.Select(attrs={"class": "nhsuk-select"}),
             "provider": forms.Select(attrs={"class": "nhsuk-select"}),
-            "duration": forms.NumberInput(attrs={"class": "nhsuk-input nhsuk-input--width-5"}),
         }
-
-    def clean(self):
-        cleaned = super().clean()
-        media_type = cleaned.get("media_type")
-        duration = cleaned.get("duration")
-        if media_type == MediaItem.MediaType.IMAGE and not duration:
-            self.add_error("duration", "Duration is required for images.")
-        return cleaned
 
 
 class PlaylistForm(forms.Form):

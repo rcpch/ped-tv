@@ -73,13 +73,25 @@
               <strong>{{ item.media_item.title }}</strong><br>
               <small>{{ item.media_item.get_media_type_display }} — {{ item.media_item.provider }}</small>
             </span>
-            <span style="font-size:.875rem;color:#4c6272;white-space:nowrap">
-              {% if item.media_item.is_image %}
-                {{ item.effective_duration|format_duration }}
-              {% else %}
+            {% if item.media_item.is_image %}
+              {# Inline duration editor for images #}
+              <form method="post" style="display:flex;align-items:center;gap:.25rem;white-space:nowrap">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="set_duration">
+                <input type="hidden" name="item_id" value="{{ item.pk }}">
+                <input class="nhsuk-input" type="number" name="duration" min="1"
+                       value="{{ item.duration|default:10 }}"
+                       style="width:4.5rem;padding:.3rem .5rem;font-size:.875rem"
+                       aria-label="Duration in seconds">
+                <span style="font-size:.875rem;color:#4c6272">s</span>
+                <button type="submit" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-bottom-0"
+                        style="padding:.3rem .6rem;font-size:.875rem">&#10003;</button>
+              </form>
+            {% else %}
+              <span style="font-size:.875rem;color:#4c6272;white-space:nowrap">
                 {{ item.media_item.video_duration|format_duration }}
-              {% endif %}
-            </span>
+              </span>
+            {% endif %}
             <form method="post" style="margin-left:auto">
               {% csrf_token %}
               <input type="hidden" name="action" value="remove_media">

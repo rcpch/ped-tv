@@ -123,11 +123,10 @@ class PlaylistEditView(StaffRequiredMixin, TemplateView):
         total = 0.0
         has_unknown = False
         for item in items:
-            d = item.media_item.duration_seconds
             if item.media_item.is_image:
-                d = item.effective_duration  # respects per-item override
-            if d is not None:
-                total += d
+                total += item.effective_duration  # always known (defaults to 10)
+            elif item.media_item.video_duration is not None:
+                total += item.media_item.video_duration
             else:
                 has_unknown = True
         ctx["total_duration"] = total
@@ -151,6 +150,17 @@ class PlaylistEditView(StaffRequiredMixin, TemplateView):
         elif action == "remove_media":
             item_id = request.POST.get("item_id")
             playlist.items.filter(pk=item_id).delete()
+
+        elif action == "set_duration":
+            item_id = request.POST.get("item_id")
+            try:
+                dur = int(request.POST.get("duration", 0))
+                if dur > 0:
+                    playlist.items.filter(
+                        pk=item_id, media_item__media_type="image"
+                    ).update(duration=dur)
+            except (ValueError, TypeError):
+                pass
 
         elif action == "reorder":
             order_ids = request.POST.getlist("order[]")

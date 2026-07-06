@@ -72,8 +72,8 @@ class PlaylistItem(models.Model):
         "content.MediaItem", on_delete=models.PROTECT, related_name="playlist_items"
     )
     order = models.PositiveIntegerField(default=0)
-    # Per-item image duration override (falls back to MediaItem.duration)
-    duration_override = models.PositiveIntegerField(null=True, blank=True)
+    # Display duration in seconds for image items (not used for videos)
+    duration = models.PositiveIntegerField(null=True, blank=True)
 
     class Meta:
         ordering = ["order"]
@@ -84,6 +84,5 @@ class PlaylistItem(models.Model):
 
     @property
     def effective_duration(self):
-        if self.duration_override is not None:
-            return self.duration_override
-        return self.media_item.duration
+        """Display duration in seconds; defaults to 10s if not explicitly set."""
+        return self.duration if self.duration is not None else 10

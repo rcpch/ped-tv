@@ -18,11 +18,6 @@ class MediaItem(models.Model):
         related_name="media_items",
     )
     # Duration in seconds; used for images (videos use actual clip length)
-    duration = models.PositiveIntegerField(
-        null=True,
-        blank=True,
-        help_text="Display duration in seconds (images only)",
-    )
     # Probed from the file during thumbnail generation
     video_duration = models.FloatField(
         null=True,
@@ -54,7 +49,5 @@ class MediaItem(models.Model):
 
     @property
     def duration_seconds(self):
-        """Duration in seconds: video clip length or image display time."""
-        if self.is_video:
-            return self.video_duration
-        return float(self.duration) if self.duration is not None else None
+        """Duration in seconds: video clip length only (image duration is per playlist item)."""
+        return self.video_duration if self.is_video else None
