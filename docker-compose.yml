@@ -15,7 +15,7 @@ services:
 
   worker:
     build: .
-    command: python manage.py db_worker
+    command: python manage.py db_worker --no-reload
     volumes:
       - .:/app
     env_file: .env

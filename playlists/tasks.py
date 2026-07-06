@@ -49,7 +49,7 @@ def _do_press(playlist) -> None:
                 # Normalise video to target resolution/fps
                 subprocess.run(
                     [
-                        "ffmpeg", "-y", "-i", str(local_path),
+                        "ffmpeg", "-nostdin", "-y", "-i", str(local_path),
                         "-vf", f"scale={PRESS_WIDTH}:{PRESS_HEIGHT}:force_original_aspect_ratio=decrease,"
                                f"pad={PRESS_WIDTH}:{PRESS_HEIGHT}:(ow-iw)/2:(oh-ih)/2,setsar=1",
                         "-r", str(PRESS_FPS),
@@ -61,22 +61,46 @@ def _do_press(playlist) -> None:
                     capture_output=True,
                 )
             else:
-                # Image → video clip with specified duration
+                # Image → video clip with specified duration.
+                #
+                # We first normalise the source image to a clean, scaled and
+                # padded PNG with a single decode, then loop THAT to build the
+                # clip. Looping the raw uploaded PNG directly is unreliable:
+                # ffmpeg's png_pipe demuxer can reject some perfectly valid
+                # PNGs on loop re-reads ("Invalid data found when processing
+                # input") and busy-loop forever at ~0 fps. An ffmpeg-produced
+                # PNG always loops cleanly.
                 duration = item.effective_duration or 5
+                clean_image = tmp / f"clean_{index}.png"
                 subprocess.run(
                     [
-                        "ffmpeg", "-y",
-                        "-loop", "1", "-i", str(local_path),
-                        "-t", str(duration),
+                        "ffmpeg", "-nostdin", "-y",
+                        "-i", str(local_path),
                         "-vf", f"scale={PRESS_WIDTH}:{PRESS_HEIGHT}:force_original_aspect_ratio=decrease,"
-                               f"pad={PRESS_WIDTH}:{PRESS_HEIGHT}:(ow-iw)/2:(oh-ih)/2,setsar=1,fps={PRESS_FPS}",
+                               f"pad={PRESS_WIDTH}:{PRESS_HEIGHT}:(ow-iw)/2:(oh-ih)/2,setsar=1",
+                        "-frames:v", "1",
+                        str(clean_image),
+                    ],
+                    check=True,
+                    capture_output=True,
+                    stdin=subprocess.DEVNULL,
+                )
+                subprocess.run(
+                    [
+                        "ffmpeg", "-nostdin", "-y",
+                        "-framerate", str(PRESS_FPS),
+                        "-loop", "1", "-t", str(duration), "-i", str(clean_image),
+                        "-f", "lavfi", "-t", str(duration),
+                        "-i", "anullsrc=r=44100:cl=stereo",
+                        "-r", str(PRESS_FPS),
                         "-c:v", "libx264", "-preset", "fast", "-crf", "23",
                         "-c:a", "aac", "-ar", "44100", "-b:a", "128k",
-                        "-shortest",
+                        "-pix_fmt", "yuv420p",
                         str(clip_path),
                     ],
                     check=True,
                     capture_output=True,
+                    stdin=subprocess.DEVNULL,
                 )
 
             clips.append(clip_path)
@@ -88,7 +112,7 @@ def _do_press(playlist) -> None:
         mp4_out = tmp / "output.mp4"
         subprocess.run(
             [
-                "ffmpeg", "-y",
+                "ffmpeg", "-nostdin", "-y",
                 "-f", "concat", "-safe", "0", "-i", str(concat_list),
                 "-c", "copy",
                 str(mp4_out),
@@ -103,7 +127,7 @@ def _do_press(playlist) -> None:
         m3u8_path = hls_dir / "playlist.m3u8"
         subprocess.run(
             [
-                "ffmpeg", "-y", "-i", str(mp4_out),
+                "ffmpeg", "-nostdin", "-y", "-i", str(mp4_out),
                 "-c", "copy",
                 "-f", "hls",
                 "-hls_time", "6",
@@ -119,7 +143,7 @@ def _do_press(playlist) -> None:
         poster_path = tmp / "poster.jpg"
         subprocess.run(
             [
-                "ffmpeg", "-y",
+                "ffmpeg", "-nostdin", "-y",
                 "-ss", "0", "-i", str(mp4_out),
                 "-frames:v", "1",
                 str(poster_path),

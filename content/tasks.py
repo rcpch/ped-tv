@@ -26,7 +26,7 @@ def generate_thumbnail(media_item_id: int) -> None:
             # Extract a frame at 1 second (or start of file if shorter)
             subprocess.run(
                 [
-                    "ffmpeg", "-y",
+                    "ffmpeg", "-nostdin", "-y",
                     "-ss", "1",
                     "-i", str(src_path),
                     "-frames:v", "1",
@@ -40,7 +40,7 @@ def generate_thumbnail(media_item_id: int) -> None:
             # For images, use ffmpeg to produce a scaled JPEG
             subprocess.run(
                 [
-                    "ffmpeg", "-y",
+                    "ffmpeg", "-nostdin", "-y",
                     "-i", str(src_path),
                     "-vf", "scale=320:-1",
                     str(out_path),
