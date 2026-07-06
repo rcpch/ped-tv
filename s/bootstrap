@@ -70,6 +70,9 @@ curl -sSf "https://cdn.jsdelivr.net/npm/nhsuk-frontend/dist/nhsuk.min.js" \
      -o "$ROOT/static/nhsuk/nhsuk.min.js"
 echo "    NHS UK frontend assets saved to static/nhsuk/."
 
+echo "==> Creating default providers..."
+docker compose run --rm web python manage.py create_providers
+
 echo ""
 echo "==> Bootstrap complete."
 echo ""
