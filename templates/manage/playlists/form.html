@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} — PED TV{% endblock %}
+{% block content %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-two-thirds">
+    <h1 class="nhsuk-heading-l">{{ action }}</h1>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      <div class="nhsuk-form-group {% if form.title.errors %}nhsuk-form-group--error{% endif %}">
+        <label class="nhsuk-label" for="{{ form.title.id_for_label }}">Title</label>
+        {% for error in form.title.errors %}
+          <span class="nhsuk-error-message">{{ error }}</span>
+        {% endfor %}
+        {{ form.title }}
+      </div>
+      <button type="submit" class="nhsuk-button">Create</button>
+      <a href="{% url 'manage:home' %}" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-left-3">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

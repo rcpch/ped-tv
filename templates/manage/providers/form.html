@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}{{ action }} — PED TV{% endblock %}
+{% block content %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-two-thirds">
+    <h1 class="nhsuk-heading-l">{{ action }}</h1>
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+
+      {% for field in form %}
+        <div class="nhsuk-form-group {% if field.errors %}nhsuk-form-group--error{% endif %}">
+          <label class="nhsuk-label" for="{{ field.id_for_label }}">
+            {{ field.label }}
+          </label>
+          {% if field.help_text %}
+            <div class="nhsuk-hint">{{ field.help_text }}</div>
+          {% endif %}
+          {% for error in field.errors %}
+            <span class="nhsuk-error-message">{{ error }}</span>
+          {% endfor %}
+          {{ field }}
+        </div>
+      {% endfor %}
+
+      <button type="submit" class="nhsuk-button">Save</button>
+      <a href="{% url 'manage:provider-list' %}" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-left-3">
+        Cancel
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}

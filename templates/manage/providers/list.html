@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Providers — PED TV{% endblock %}
+{% block content %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-full">
+    <h1 class="nhsuk-heading-l">Providers</h1>
+    <p>
+      <a href="{% url 'manage:provider-add' %}" class="nhsuk-button">Add provider</a>
+    </p>
+
+    {% if providers %}
+      <table class="nhsuk-table">
+        <thead class="nhsuk-table__head">
+          <tr class="nhsuk-table__row">
+            <th class="nhsuk-table__header" scope="col">Name</th>
+            <th class="nhsuk-table__header" scope="col">Website</th>
+            <th class="nhsuk-table__header" scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="nhsuk-table__body">
+          {% for provider in providers %}
+          <tr class="nhsuk-table__row">
+            <td class="nhsuk-table__cell">
+              {% if provider.logo %}
+                <img src="{{ provider.logo.url }}" alt="" style="height:2rem;margin-right:.5rem;vertical-align:middle">
+              {% endif %}
+              {{ provider.name }}
+            </td>
+            <td class="nhsuk-table__cell">
+              <a href="{{ provider.url }}" target="_blank" rel="noopener noreferrer">{{ provider.url }}</a>
+            </td>
+            <td class="nhsuk-table__cell">
+              <a href="{% url 'manage:provider-edit' provider.pk %}">Edit</a>
+              &nbsp;|&nbsp;
+              <a href="{% url 'manage:provider-delete' provider.pk %}">Delete</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="nhsuk-body">No providers yet.</p>
+    {% endif %}
+
+    <p><a href="{% url 'manage:home' %}">← Back to management</a></p>
+  </div>
+</div>
+{% endblock %}

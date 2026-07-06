@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+{% block title %}{{ playlist.title }} — PED TV{% endblock %}
+{% block content %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-full">
+
+    {# Hero player #}
+    <div style="background:#000;max-width:100%;position:relative" class="nhsuk-u-margin-bottom-4">
+      <video id="pl-video"
+             style="width:100%;display:block"
+             poster="{% if playlist.poster %}{{ playlist.poster.url }}{% endif %}"
+             playsinline
+             loop>
+      </video>
+      <div id="play-overlay"
+           style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer">
+        <button class="nhsuk-button" id="play-btn" style="font-size:1.25rem;padding:1rem 2rem">
+          ▶ Play
+        </button>
+      </div>
+    </div>
+
+    <h1 class="nhsuk-heading-l">{{ playlist.title }}</h1>
+
+    {% if playlist.mp4_file %}
+      <p>
+        <a href="{{ playlist.mp4_file.url }}" class="nhsuk-button nhsuk-button--secondary" download>
+          Download MP4
+        </a>
+      </p>
+    {% endif %}
+
+    {# Media list with provider info #}
+    <h2 class="nhsuk-heading-m">Contents</h2>
+    <ul class="nhsuk-list">
+      {% for item in items %}
+        <li class="nhsuk-u-margin-bottom-4" style="display:flex;gap:1.5rem;align-items:flex-start">
+          {% if item.media_item.thumbnail %}
+            <img src="{{ item.media_item.thumbnail.url }}" alt=""
+                 style="width:8rem;height:5rem;object-fit:cover;flex-shrink:0">
+          {% endif %}
+          <div>
+            <p class="nhsuk-body nhsuk-u-margin-bottom-1"><strong>{{ item.media_item.title }}</strong></p>
+            {% with p=item.media_item.provider %}
+              <div style="display:flex;align-items:center;gap:.75rem">
+                {% if p.logo %}
+                  <img src="{{ p.logo.url }}" alt="{{ p.name }}" style="height:2rem">
+                {% endif %}
+                <span>
+                  <a href="{{ p.url }}" target="_blank" rel="noopener noreferrer">{{ p.name }}</a>
+                  {% if p.description %}
+                    — {{ p.description|truncatewords:12 }}
+                  {% endif %}
+                </span>
+              </div>
+            {% endwith %}
+          </div>
+        </li>
+      {% endfor %}
+    </ul>
+
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if playlist.hls_manifest %}
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
+<script>
+(function () {
+  var video = document.getElementById('pl-video');
+  var overlay = document.getElementById('play-overlay');
+  var src = "{{ playlist.hls_manifest.url }}";
+
+  if (Hls.isSupported()) {
+    var hls = new Hls();
+    hls.loadSource(src);
+    hls.attachMedia(video);
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = src;
+  }
+
+  document.getElementById('play-btn').addEventListener('click', function () {
+    overlay.style.display = 'none';
+    video.play();
+    if (video.requestFullscreen) { video.requestFullscreen(); }
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

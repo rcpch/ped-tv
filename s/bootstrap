@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+# Run once after cloning to get the dev environment ready.
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+echo "==> Copying .env.example to .env (if not already present)..."
+if [[ ! -f "$ROOT/.env" ]]; then
+  cp "$ROOT/.env.example" "$ROOT/.env"
+  echo "    .env created — edit it if needed."
+else
+  echo "    .env already exists, skipping."
+fi
+
+echo "==> Building Docker images..."
+docker compose build
+
+echo "==> Starting postgres and minio..."
+docker compose up -d postgres minio
+
+echo "==> Waiting for postgres..."
+until docker compose exec postgres pg_isready -U pedtv -q; do sleep 1; done
+
+echo "==> Running migrations..."
+docker compose run --rm web python manage.py migrate
+
+echo "==> Creating MinIO bucket..."
+docker compose run --rm web python - <<'PYEOF'
+import os, json, boto3
+from botocore.client import Config
+from botocore.exceptions import ClientError
+
+s3 = boto3.client(
+    "s3",
+    endpoint_url=os.environ["AWS_S3_ENDPOINT_URL"],
+    aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+    aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+    config=Config(signature_version="s3v4"),
+    region_name=os.environ.get("AWS_S3_REGION_NAME", "us-east-1"),
+)
+bucket = os.environ.get("AWS_STORAGE_BUCKET_NAME", "pedtv-media")
+try:
+    s3.create_bucket(Bucket=bucket)
+    print(f"Bucket '{bucket}' created.")
+except ClientError as e:
+    code = e.response["Error"]["Code"]
+    if code in ("BucketAlreadyOwnedByYou", "BucketAlreadyExists"):
+        print(f"Bucket '{bucket}' already exists.")
+    else:
+        raise
+
+policy = json.dumps({
+    "Version": "2012-10-17",
+    "Statement": [{
+        "Effect": "Allow",
+        "Principal": {"AWS": "*"},
+        "Action": "s3:GetObject",
+        "Resource": f"arn:aws:s3:::{bucket}/*",
+    }],
+})
+s3.put_bucket_policy(Bucket=bucket, Policy=policy)
+print("Public-read policy applied.")
+PYEOF
+
+echo "==> Downloading NHS UK frontend assets..."
+mkdir -p "$ROOT/static/nhsuk"
+curl -sSf "https://cdn.jsdelivr.net/npm/nhsuk-frontend/dist/nhsuk.min.css" \
+     -o "$ROOT/static/nhsuk/nhsuk.min.css"
+curl -sSf "https://cdn.jsdelivr.net/npm/nhsuk-frontend/dist/nhsuk.min.js" \
+     -o "$ROOT/static/nhsuk/nhsuk.min.js"
+echo "    NHS UK frontend assets saved to static/nhsuk/."
+
+echo ""
+echo "==> Bootstrap complete."
+echo ""
+echo "    Next steps:"
+echo "      s/manage createsuperuser   — create your first admin account"
+echo "      s/up                       — start the full dev stack"
+echo "      open http://localhost:8000"

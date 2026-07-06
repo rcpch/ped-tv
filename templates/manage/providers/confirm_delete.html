@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Delete {{ object.name }} — PED TV{% endblock %}
+{% block content %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-two-thirds">
+    <h1 class="nhsuk-heading-l">Delete provider</h1>
+    <p class="nhsuk-body">
+      Are you sure you want to delete <strong>{{ object.name }}</strong>?
+      This cannot be undone.
+    </p>
+    <form method="post">
+      {% csrf_token %}
+      <button type="submit" class="nhsuk-button nhsuk-button--warning">Delete</button>
+      <a href="{% url 'manage:provider-list' %}" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-left-3">
+        Cancel
+      </a>
+    </form>
+  </div>
+</div>
+{% endblock %}

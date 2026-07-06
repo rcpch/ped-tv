@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}Sign In — PED TV{% endblock %}
+{% block content %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-two-thirds">
+    <h1 class="nhsuk-heading-l">Sign in</h1>
+    <form method="post" novalidate>
+      {% csrf_token %}
+      {% if form.non_field_errors %}
+        <div class="nhsuk-error-summary" aria-labelledby="error-summary-title" role="alert">
+          <h2 class="nhsuk-error-summary__title" id="error-summary-title">
+            There is a problem
+          </h2>
+          <ul class="nhsuk-list nhsuk-error-summary__list">
+            {% for error in form.non_field_errors %}
+              <li>{{ error }}</li>
+            {% endfor %}
+          </ul>
+        </div>
+      {% endif %}
+
+      <div class="nhsuk-form-group {% if form.username.errors %}nhsuk-form-group--error{% endif %}">
+        <label class="nhsuk-label" for="{{ form.username.id_for_label }}">
+          Username
+        </label>
+        {% for error in form.username.errors %}
+          <span class="nhsuk-error-message">{{ error }}</span>
+        {% endfor %}
+        <input class="nhsuk-input {% if form.username.errors %}nhsuk-input--error{% endif %}"
+               id="{{ form.username.id_for_label }}"
+               name="{{ form.username.html_name }}"
+               type="text"
+               autocomplete="username"
+               value="{{ form.username.value|default:'' }}">
+      </div>
+
+      <div class="nhsuk-form-group {% if form.password.errors %}nhsuk-form-group--error{% endif %}">
+        <label class="nhsuk-label" for="{{ form.password.id_for_label }}">
+          Password
+        </label>
+        {% for error in form.password.errors %}
+          <span class="nhsuk-error-message">{{ error }}</span>
+        {% endfor %}
+        <input class="nhsuk-input {% if form.password.errors %}nhsuk-input--error{% endif %}"
+               id="{{ form.password.id_for_label }}"
+               name="{{ form.password.html_name }}"
+               type="password"
+               autocomplete="current-password">
+      </div>
+
+      <button type="submit" class="nhsuk-button">Sign in</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

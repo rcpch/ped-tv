@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block title %}Management — PED TV{% endblock %}
+{% block content %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-full">
+    <h1 class="nhsuk-heading-l">Playlists</h1>
+
+    <p>
+      <a href="{% url 'manage:playlist-create' %}" class="nhsuk-button">
+        Create new playlist
+      </a>
+    </p>
+
+    {% if playlists %}
+      <table class="nhsuk-table">
+        <thead class="nhsuk-table__head">
+          <tr class="nhsuk-table__row">
+            <th class="nhsuk-table__header" scope="col">Title</th>
+            <th class="nhsuk-table__header" scope="col">Status</th>
+            <th class="nhsuk-table__header" scope="col">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="nhsuk-table__body">
+          {% for playlist in playlists %}
+          <tr class="nhsuk-table__row">
+            <td class="nhsuk-table__cell">
+              {{ playlist.title }}
+              {% if playlist.is_main %}
+                <strong class="nhsuk-tag nhsuk-tag--blue nhsuk-u-margin-left-2">Main</strong>
+              {% endif %}
+            </td>
+            <td class="nhsuk-table__cell">
+              {% if playlist.status == "pressing" %}
+                <span class="nhsuk-tag nhsuk-tag--yellow">Pressing…</span>
+              {% elif playlist.status == "published" %}
+                <span class="nhsuk-tag nhsuk-tag--green">Published</span>
+              {% elif playlist.status == "archived" %}
+                <span class="nhsuk-tag nhsuk-tag--grey">Archived</span>
+              {% else %}
+                <span class="nhsuk-tag nhsuk-tag--white">Draft</span>
+              {% endif %}
+            </td>
+            <td class="nhsuk-table__cell">
+              <a href="{% url 'manage:playlist-edit' playlist.pk %}">Edit</a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    {% else %}
+      <p class="nhsuk-body">No playlists yet.</p>
+    {% endif %}
+
+    <hr class="nhsuk-section-break nhsuk-section-break--l nhsuk-section-break--visible">
+    <p>
+      <a href="{% url 'manage:provider-list' %}">Manage providers</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

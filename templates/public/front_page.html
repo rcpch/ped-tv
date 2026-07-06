@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}PED TV{% endblock %}
+{% block content %}
+{% if main_playlist %}
+  {# Hero player #}
+  <div class="nhsuk-hero nhsuk-u-margin-bottom-6">
+    <div class="nhsuk-width-container">
+      <div class="nhsuk-hero__wrapper">
+        <h1 class="nhsuk-u-visually-hidden">{{ main_playlist.title }}</h1>
+        <div id="player-container" style="position:relative;background:#000;max-width:100%">
+          <video id="main-video"
+                 style="width:100%;display:block"
+                 poster="{% if main_playlist.poster %}{{ main_playlist.poster.url }}{% endif %}"
+                 playsinline
+                 loop>
+          </video>
+          <div id="play-overlay"
+               style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer">
+            <button class="nhsuk-button" id="play-btn" style="font-size:1.25rem;padding:1rem 2rem">
+              ▶ Play
+            </button>
+          </div>
+        </div>
+        {% if main_playlist.mp4_file %}
+          <p class="nhsuk-u-margin-top-3">
+            <a href="{{ main_playlist.mp4_file.url }}" class="nhsuk-button nhsuk-button--secondary" download>
+              Download MP4
+            </a>
+          </p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  {# Playlist list #}
+  <div class="nhsuk-width-container">
+    <h2 class="nhsuk-heading-m">All playlists</h2>
+    <ul class="nhsuk-list nhsuk-list--border">
+      <li>
+        <a href="{% url 'playlist' main_playlist.slug %}">
+          {{ main_playlist.title }} <strong>(main)</strong>
+        </a>
+      </li>
+      {% for pl in other_playlists %}
+        <li>
+          <a href="{% url 'playlist' pl.slug %}">{{ pl.title }}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+
+{% else %}
+  <div class="nhsuk-width-container">
+    <p class="nhsuk-body nhsuk-u-margin-top-6">No playlists published yet.</p>
+  </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+{% if main_playlist and main_playlist.hls_manifest %}
+<script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
+<script>
+(function () {
+  var video = document.getElementById('main-video');
+  var overlay = document.getElementById('play-overlay');
+  var src = "{{ main_playlist.hls_manifest.url }}";
+
+  if (Hls.isSupported()) {
+    var hls = new Hls();
+    hls.loadSource(src);
+    hls.attachMedia(video);
+  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+    video.src = src;
+  }
+
+  document.getElementById('play-btn').addEventListener('click', function () {
+    overlay.style.display = 'none';
+    video.play();
+    if (video.requestFullscreen) { video.requestFullscreen(); }
+  });
+})();
+</script>
+{% endif %}
+{% endblock %}

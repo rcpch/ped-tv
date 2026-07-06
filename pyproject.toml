@@ -1,0 +1,16 @@
+[project]
+name = "ped-tv"
+version = "0.1.0"
+description = "Video playlists for paediatric A&E waiting areas"
+requires-python = ">=3.12"
+dependencies = [
+    "django>=5.2",
+    "psycopg[binary]>=3.2",
+    "django-storages[s3,azure]>=1.14",
+    "django-tasks>=0.12",
+    "django-tasks-db>=0.1",
+    "pillow>=11.0",
+    "whitenoise[brotli]>=6.8",
+    "gunicorn>=23.0",
+    "django-debug-toolbar>=4.4",
+]

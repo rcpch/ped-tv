@@ -1,0 +1,79 @@
+{% load static %}<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>{% block title %}PED TV{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'nhsuk/nhsuk.min.css' %}">
+    {% block extra_head %}{% endblock %}
+  </head>
+  <body>
+    <script>
+      document.body.className = (document.body.className
+        ? document.body.className + ' js-enabled'
+        : 'js-enabled');
+    </script>
+
+    <header class="nhsuk-header" role="banner">
+      <div class="nhsuk-width-container nhsuk-header__container">
+        <div class="nhsuk-header__logo">
+          <a class="nhsuk-header__link nhsuk-header__link--service" href="/">
+            <span class="nhsuk-header__service-name">PED TV</span>
+          </a>
+        </div>
+        <div class="nhsuk-header__content" id="content-header">
+          <nav class="nhsuk-header__navigation" aria-label="Primary navigation">
+            <ul class="nhsuk-header__navigation-list">
+              {% if user.is_authenticated %}
+                <li class="nhsuk-header__navigation-item">
+                  <a class="nhsuk-header__navigation-link" href="{% url 'manage:home' %}">Manage</a>
+                </li>
+                <li class="nhsuk-header__navigation-item">
+                  <form method="post" action="{% url 'logout' %}" style="display:inline">
+                    {% csrf_token %}
+                    <button type="submit" class="nhsuk-header__navigation-link"
+                            style="background:none;border:none;cursor:pointer;padding:0">
+                      Log Out
+                    </button>
+                  </form>
+                </li>
+              {% else %}
+                <li class="nhsuk-header__navigation-item">
+                  <a class="nhsuk-header__navigation-link" href="{% url 'login' %}">Sign In</a>
+                </li>
+              {% endif %}
+            </ul>
+          </nav>
+        </div>
+      </div>
+    </header>
+
+    <div class="nhsuk-width-container">
+      {% if messages %}
+        <div class="nhsuk-u-margin-top-4">
+          {% for message in messages %}
+            <div class="nhsuk-inset-text {% if message.tags == 'error' %}nhsuk-inset-text--red{% endif %}">
+              <span class="nhsuk-u-visually-hidden">{{ message.tags|title }}:</span>
+              <p>{{ message }}</p>
+            </div>
+          {% endfor %}
+        </div>
+      {% endif %}
+
+      <main class="nhsuk-main-wrapper" id="main-content" role="main">
+        {% block content %}{% endblock %}
+      </main>
+    </div>
+
+    <footer role="contentinfo">
+      <div class="nhsuk-footer">
+        <div class="nhsuk-width-container">
+          <p class="nhsuk-footer__copyright">&copy; PED TV</p>
+        </div>
+      </div>
+    </footer>
+
+    <script src="{% static 'nhsuk/nhsuk.min.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+  </body>
+</html>

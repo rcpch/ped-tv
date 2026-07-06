@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+{% block title %}Upload media — PED TV{% endblock %}
+{% block content %}
+<div class="nhsuk-grid-row">
+  <div class="nhsuk-grid-column-two-thirds">
+    <h1 class="nhsuk-heading-l">Upload media</h1>
+    <p class="nhsuk-body">
+      Upload a video or image. A thumbnail will be generated automatically.
+    </p>
+
+    <form method="post" enctype="multipart/form-data" novalidate>
+      {% csrf_token %}
+      {% for field in form %}
+        <div class="nhsuk-form-group {% if field.errors %}nhsuk-form-group--error{% endif %}">
+          <label class="nhsuk-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
+          {% if field.help_text %}
+            <div class="nhsuk-hint">{{ field.help_text }}</div>
+          {% endif %}
+          {% for error in field.errors %}
+            <span class="nhsuk-error-message">{{ error }}</span>
+          {% endfor %}
+          {{ field }}
+        </div>
+      {% endfor %}
+      <button type="submit" class="nhsuk-button">Upload</button>
+      <a href="{% url 'manage:home' %}" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-left-3">Cancel</a>
+    </form>
+  </div>
+</div>
+{% endblock %}
