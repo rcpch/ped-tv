@@ -13,7 +13,14 @@ def generate_thumbnail(media_item_id: int) -> None:
     media = MediaItem.objects.get(pk=media_item_id)
 
     with tempfile.TemporaryDirectory() as tmpdir:
-        out_path = Path(tmpdir) / "thumb.jpg"
+        tmp = Path(tmpdir)
+        out_path = tmp / "thumb.jpg"
+
+        # Download the source file via storage backend (internal endpoint, not public URL)
+        suffix = Path(media.file.name).suffix or ".bin"
+        src_path = tmp / f"source{suffix}"
+        with media.file.open("rb") as f:
+            src_path.write_bytes(f.read())
 
         if media.is_video:
             # Extract a frame at 1 second (or start of file if shorter)
@@ -21,7 +28,7 @@ def generate_thumbnail(media_item_id: int) -> None:
                 [
                     "ffmpeg", "-y",
                     "-ss", "1",
-                    "-i", media.file.url,
+                    "-i", str(src_path),
                     "-frames:v", "1",
                     "-vf", "scale=320:-1",
                     str(out_path),
@@ -34,7 +41,7 @@ def generate_thumbnail(media_item_id: int) -> None:
             subprocess.run(
                 [
                     "ffmpeg", "-y",
-                    "-i", media.file.url,
+                    "-i", str(src_path),
                     "-vf", "scale=320:-1",
                     str(out_path),
                 ],

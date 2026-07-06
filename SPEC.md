@@ -17,7 +17,7 @@ Draft playlist should be hidden from the public site entirely.
 
 The playlist editor allows admins to upload videos and images. Both can then be dragged and dropped into the playlist. Images are given a duration that they are displayed for whereas videos are played in full.
 
-Content (both videos and images) have an associated "provider" who created the media originally. Each provider has a logo, description and a link to their site. For example the Lullaby Trust provide content on safe sleeping for babies.
+Content (both videos and images) have an associated "provider" who created the media originally. Each provider has a logo, description and a link to their site. For example the Lullaby Trust provide content on safe sleeping for babies. Logo and description are optional.
 
 Uploaded content should have thumnbails to easily identify which content is which.
 

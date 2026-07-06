@@ -1,7 +1,6 @@
 import subprocess
 import tempfile
 import traceback
-import urllib.request
 from pathlib import Path
 
 from django.core.files.base import ContentFile
@@ -40,9 +39,9 @@ def _do_press(playlist) -> None:
             suffix = Path(media.file.name).suffix or ".bin"
             local_path = tmp / f"input_{index}{suffix}"
 
-            # Download file from storage to local tmp
-            with urllib.request.urlopen(media.file.url) as resp:
-                local_path.write_bytes(resp.read())
+            # Read file via storage backend (uses internal endpoint_url, not the public URL)
+            with media.file.open("rb") as f:
+                local_path.write_bytes(f.read())
 
             clip_path = tmp / f"clip_{index}.mp4"
 
