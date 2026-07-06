@@ -6,6 +6,7 @@
     <h1 class="nhsuk-heading-l">{{ action }}</h1>
     <form method="post" enctype="multipart/form-data" novalidate>
       {% csrf_token %}
+      <input type="hidden" name="back_to" value="{{ back_to_playlist }}">
 
       {% for field in form %}
         <div class="nhsuk-form-group {% if field.errors %}nhsuk-form-group--error{% endif %}">
@@ -23,9 +24,15 @@
       {% endfor %}
 
       <button type="submit" class="nhsuk-button">Save</button>
-      <a href="{% url 'manage:provider-list' %}" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-left-3">
-        Cancel
-      </a>
+      {% if back_to_playlist %}
+        <a href="{% url 'manage:playlist-edit' back_to_playlist %}" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-left-3">
+          Cancel
+        </a>
+      {% else %}
+        <a href="{% url 'manage:provider-list' %}" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-left-3">
+          Cancel
+        </a>
+      {% endif %}
     </form>
   </div>
 </div>

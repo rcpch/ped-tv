@@ -49,7 +49,16 @@ class ProviderCreateView(StaffRequiredMixin, CreateView):
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
         ctx["action"] = "Add provider"
+        ctx["back_to_playlist"] = self.request.GET.get("back_to", "")
         return ctx
+
+    def form_valid(self, form):
+        response = super().form_valid(form)
+        back_to = self.request.POST.get("back_to", "")
+        if back_to:
+            base = reverse("manage:playlist-edit", args=[back_to])
+            return redirect(f"{base}?provider={self.object.pk}")
+        return response
 
 
 class ProviderUpdateView(StaffRequiredMixin, UpdateView):
