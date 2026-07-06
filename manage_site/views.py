@@ -1,7 +1,8 @@
 from django.contrib import messages
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404, redirect
+from django.shortcuts import get_object_or_404, redirect, render
 from django.template.loader import render_to_string
+from django.utils.safestring import mark_safe
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 
@@ -116,21 +117,41 @@ class PlaylistEditView(StaffRequiredMixin, TemplateView):
         ctx["playlist"] = playlist
         items = list(playlist.items.select_related("media_item__provider"))
         ctx["items"] = items
-        ctx["available_media"] = MediaItem.objects.select_related("provider")
-        ctx["media_form"] = MediaItemForm()
+        ctx["providers_list"] = Provider.objects.order_by("name")
 
         # Compute total playlist duration
         total = 0.0
         has_unknown = False
         for item in items:
             if item.media_item.is_image:
-                total += item.effective_duration  # always known (defaults to 10)
+                total += item.effective_duration
             elif item.media_item.video_duration is not None:
                 total += item.media_item.video_duration
             else:
                 has_unknown = True
         ctx["total_duration"] = total
         ctx["total_duration_approx"] = has_unknown
+
+        # Pre-load provider media panel if ?provider= is in the URL
+        initial_provider_id = self.request.GET.get("provider", "")
+        ctx["initial_provider_id"] = initial_provider_id
+        if initial_provider_id:
+            existing_ids = {i.media_item_id for i in items}
+            panel_html = render_to_string(
+                "manage/media/_provider_panel.html",
+                {
+                    "media_items": MediaItem.objects.filter(
+                        provider_id=initial_provider_id
+                    ).order_by("-created_at"),
+                    "provider_id": initial_provider_id,
+                    "playlist_id": playlist.pk,
+                    "existing_ids": existing_ids,
+                },
+                request=self.request,
+            )
+            ctx["initial_panel_html"] = mark_safe(panel_html)
+        else:
+            ctx["initial_panel_html"] = ""
         return ctx
 
     def post(self, request, pk):
@@ -146,6 +167,9 @@ class PlaylistEditView(StaffRequiredMixin, TemplateView):
                 media_item=media,
                 defaults={"order": last_order + 1},
             )
+            # Preserve provider selection so the panel stays open
+            base = reverse("manage:playlist-edit", args=[pk])
+            return redirect(f"{base}?provider={media.provider_id}")
 
         elif action == "remove_media":
             item_id = request.POST.get("item_id")
@@ -201,10 +225,17 @@ class MediaUploadView(StaffRequiredMixin, TemplateView):
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)
-        ctx["form"] = MediaItemForm()
+        provider_id = self.request.GET.get("provider", "")
+        back_to = self.request.GET.get("back_to", "")
+        ctx["form"] = MediaItemForm(
+            initial={"provider": provider_id} if provider_id else {}
+        )
+        ctx["back_to_playlist"] = back_to
+        ctx["initial_provider_id"] = provider_id
         return ctx
 
     def post(self, request):
+        back_to = request.POST.get("back_to", "")
         form = MediaItemForm(request.POST, request.FILES)
         if form.is_valid():
             media = form.save(commit=False)
@@ -213,6 +244,43 @@ class MediaUploadView(StaffRequiredMixin, TemplateView):
             from content.tasks import generate_thumbnail
             generate_thumbnail.enqueue(media.pk)
             messages.success(request, f'"{media.title}" uploaded. Thumbnail is being generated.')
+            if back_to:
+                base = reverse("manage:playlist-edit", args=[back_to])
+                return redirect(f"{base}?provider={media.provider_id}")
             return redirect("manage:media-upload")
-        return self.render_to_response({"form": form})
+        return self.render_to_response({"form": form, "back_to_playlist": back_to})
+
+
+# ---------------------------------------------------------------------------
+# Media for provider (HTMX fragment)
+# ---------------------------------------------------------------------------
+
+class MediaForProviderView(StaffRequiredMixin, TemplateView):
+    """Returns the provider media panel fragment for HTMX requests."""
+
+    def get(self, request):
+        provider_id = request.GET.get("provider", "")
+        playlist_id = request.GET.get("playlist", "")
+
+        if not provider_id:
+            return HttpResponse("")
+
+        media_items = MediaItem.objects.filter(
+            provider_id=provider_id
+        ).order_by("-created_at")
+
+        existing_ids = set()
+        if playlist_id:
+            existing_ids = set(
+                PlaylistItem.objects.filter(
+                    playlist_id=playlist_id
+                ).values_list("media_item_id", flat=True)
+            )
+
+        return render(request, "manage/media/_provider_panel.html", {
+            "media_items": media_items,
+            "provider_id": provider_id,
+            "playlist_id": playlist_id,
+            "existing_ids": existing_ids,
+        })
 

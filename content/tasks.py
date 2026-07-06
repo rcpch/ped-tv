@@ -37,10 +37,11 @@ def generate_thumbnail(media_item_id: int) -> None:
                 capture_output=True,
                 stdin=subprocess.DEVNULL,
             )
-            # Probe clip duration while we have the file locally
+            # Probe clip duration while we have the file locally.
+            # Note: ffprobe does not support -nostdin; use stdin=DEVNULL instead.
             result = subprocess.run(
                 [
-                    "ffprobe", "-nostdin", "-v", "error",
+                    "ffprobe", "-v", "error",
                     "-show_entries", "format=duration",
                     "-of", "default=noprint_wrappers=1:nokey=1",
                     str(src_path),

@@ -15,4 +15,5 @@ urlpatterns = [
     path("playlists/<int:pk>/", views.PlaylistEditView.as_view(), name="playlist-edit"),
     # Media
     path("media/upload/", views.MediaUploadView.as_view(), name="media-upload"),
+    path("media/for-provider/", views.MediaForProviderView.as_view(), name="media-for-provider"),
 ]

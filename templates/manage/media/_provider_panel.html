@@ -1,0 +1,46 @@
+{% load pedtv_tags %}
+{% if media_items %}
+  <ul class="nhsuk-list" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:.75rem;margin-top:.75rem">
+    {% for item in media_items %}
+      <li style="border:1px solid #d8dde0;border-radius:4px;overflow:hidden">
+        {% if item.thumbnail %}
+          <img src="{{ item.thumbnail.url }}" alt=""
+               style="width:100%;height:90px;object-fit:cover;display:block">
+        {% else %}
+          <div style="width:100%;height:90px;background:#e8edee;display:flex;align-items:center;justify-content:center;font-size:.75rem;color:#4c6272">
+            No thumbnail
+          </div>
+        {% endif %}
+        <div style="padding:.5rem">
+          <p style="font-size:.8125rem;font-weight:700;margin:0 0 .2rem;line-height:1.3">{{ item.title|truncatechars:40 }}</p>
+          <p style="font-size:.75rem;color:#4c6272;margin:0 0 .5rem">
+            {{ item.get_media_type_display }}
+            {% if item.is_video and item.video_duration %} &middot; {{ item.video_duration|format_duration }}{% endif %}
+          </p>
+          {% if item.pk in existing_ids %}
+            <span class="nhsuk-tag nhsuk-tag--green" style="font-size:.75rem">Added</span>
+          {% else %}
+            <form method="post" action="{% url 'manage:playlist-edit' playlist_id %}">
+              {% csrf_token %}
+              <input type="hidden" name="action" value="add_media">
+              <input type="hidden" name="media_id" value="{{ item.pk }}">
+              <button type="submit"
+                      class="nhsuk-button nhsuk-u-margin-bottom-0"
+                      style="padding:.3rem .6rem;font-size:.8125rem;width:100%">
+                + Add
+              </button>
+            </form>
+          {% endif %}
+        </div>
+      </li>
+    {% endfor %}
+  </ul>
+{% else %}
+  <p class="nhsuk-body-s nhsuk-u-margin-top-3">No media from this provider yet.</p>
+{% endif %}
+
+<p class="nhsuk-u-margin-top-3 nhsuk-body-s">
+  <a href="{% url 'manage:media-upload' %}?provider={{ provider_id }}&back_to={{ playlist_id }}">
+    Upload new media for this provider ↗
+  </a>
+</p>

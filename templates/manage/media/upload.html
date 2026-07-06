@@ -3,6 +3,9 @@
 {% block content %}
 <div class="nhsuk-grid-row">
   <div class="nhsuk-grid-column-two-thirds">
+    {% if back_to_playlist %}
+      <p><a href="{% url 'manage:playlist-edit' back_to_playlist %}?provider={{ initial_provider_id }}">← Back to playlist</a></p>
+    {% endif %}
     <h1 class="nhsuk-heading-l">Upload media</h1>
     <p class="nhsuk-body">
       Upload a video or image. A thumbnail will be generated automatically.
@@ -10,6 +13,7 @@
 
     <form method="post" enctype="multipart/form-data" novalidate>
       {% csrf_token %}
+      <input type="hidden" name="back_to" value="{{ back_to_playlist }}">
       {% for field in form %}
         <div class="nhsuk-form-group {% if field.errors %}nhsuk-form-group--error{% endif %}">
           <label class="nhsuk-label" for="{{ field.id_for_label }}">{{ field.label }}</label>
@@ -23,7 +27,12 @@
         </div>
       {% endfor %}
       <button type="submit" class="nhsuk-button">Upload</button>
-      <a href="{% url 'manage:home' %}" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-left-3">Cancel</a>
+      {% if back_to_playlist %}
+        <a href="{% url 'manage:playlist-edit' back_to_playlist %}?provider={{ initial_provider_id }}"
+           class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-left-3">Cancel</a>
+      {% else %}
+        <a href="{% url 'manage:home' %}" class="nhsuk-button nhsuk-button--secondary nhsuk-u-margin-left-3">Cancel</a>
+      {% endif %}
     </form>
   </div>
 </div>
