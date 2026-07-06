@@ -6,20 +6,7 @@
 
     <h1 class="nhsuk-heading-l">
       {{ playlist.title }}
-      {% if playlist.status == "pressing" %}
-        <span class="nhsuk-tag nhsuk-tag--yellow nhsuk-u-margin-left-2"
-              id="press-status"
-              hx-get="{% url 'manage:playlist-edit' playlist.pk %}?status_fragment=1"
-              hx-trigger="every 3s"
-              hx-target="#press-status"
-              hx-swap="outerHTML">
-          Pressing…
-        </span>
-      {% elif playlist.status == "published" %}
-        <span class="nhsuk-tag nhsuk-tag--green nhsuk-u-margin-left-2">Published</span>
-      {% else %}
-        <span class="nhsuk-tag nhsuk-tag--white nhsuk-u-margin-left-2">Draft</span>
-      {% endif %}
+      {% include "manage/playlists/_status_tag.html" %}
       {% if playlist.is_main %}
         <span class="nhsuk-tag nhsuk-tag--blue nhsuk-u-margin-left-2">Main</span>
       {% endif %}

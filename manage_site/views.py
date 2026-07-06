@@ -1,5 +1,7 @@
 from django.contrib import messages
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect
+from django.template.loader import render_to_string
 from django.views.generic import TemplateView, ListView, CreateView, UpdateView, DeleteView
 from django.urls import reverse_lazy, reverse
 
@@ -96,6 +98,17 @@ class PlaylistEditView(StaffRequiredMixin, TemplateView):
 
     def get_playlist(self):
         return get_object_or_404(Playlist, pk=self.kwargs["pk"])
+
+    def get(self, request, **kwargs):
+        playlist = self.get_playlist()
+        if request.GET.get("status_fragment"):
+            html = render_to_string(
+                "manage/playlists/_status_tag.html",
+                {"playlist": playlist},
+                request=request,
+            )
+            return HttpResponse(html)
+        return super().get(request, **kwargs)
 
     def get_context_data(self, **kwargs):
         ctx = super().get_context_data(**kwargs)

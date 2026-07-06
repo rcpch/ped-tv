@@ -1,0 +1,6 @@
+{% load i18n %}{% url 'manage:playlist-edit' playlist.pk as edit_url %}{% if playlist.status == "pressing" %}<span class="nhsuk-tag nhsuk-tag--yellow nhsuk-u-margin-left-2"
+      id="press-status"
+      hx-get="{{ edit_url }}?status_fragment=1"
+      hx-trigger="every 3s"
+      hx-target="#press-status"
+      hx-swap="outerHTML">Pressing…</span>{% elif playlist.status == "published" %}<span class="nhsuk-tag nhsuk-tag--green nhsuk-u-margin-left-2" id="press-status">Published</span>{% elif playlist.status == "archived" %}<span class="nhsuk-tag nhsuk-tag--grey nhsuk-u-margin-left-2" id="press-status">Archived</span>{% else %}<span class="nhsuk-tag nhsuk-tag--white nhsuk-u-margin-left-2" id="press-status">Draft</span>{% endif %}
