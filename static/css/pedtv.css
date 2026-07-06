@@ -1,0 +1,33 @@
+/* ------------------------------------------------------------------
+   PED TV custom overrides for NHS UK design system
+   ------------------------------------------------------------------ */
+
+/* Vertically centre logo and nav items in the header */
+.nhsuk-header__container {
+  align-items: center;
+}
+
+.nhsuk-header__navigation-list {
+  align-items: center;
+}
+
+/* Make the logout <button> render identically to the nav <a> links */
+button.nhsuk-header__navigation-link {
+  appearance: none;
+  -webkit-appearance: none;
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 16px;
+  font-family: inherit;
+  line-height: inherit;
+  color: #fff;
+  padding: 12px 2px;
+  margin: 0;
+  text-decoration: underline;
+}
+
+button.nhsuk-header__navigation-link:hover {
+  color: #fff;
+  text-decoration: none;
+}
