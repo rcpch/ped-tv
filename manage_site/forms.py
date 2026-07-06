@@ -17,10 +17,9 @@ class ProviderForm(forms.ModelForm):
 class MediaItemForm(forms.ModelForm):
     class Meta:
         model = MediaItem
-        fields = ["title", "media_type", "file", "provider"]
+        fields = ["title", "file", "provider"]
         widgets = {
             "title": forms.TextInput(attrs={"class": "nhsuk-input"}),
-            "media_type": forms.Select(attrs={"class": "nhsuk-select"}),
             "provider": forms.Select(attrs={"class": "nhsuk-select"}),
         }
 

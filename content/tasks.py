@@ -22,8 +22,29 @@ def generate_thumbnail(media_item_id: int) -> None:
         with media.file.open("rb") as f:
             src_path.write_bytes(f.read())
 
-        if media.is_video:
-            # Extract a frame at 1 second (or start of file if shorter)
+        # ---- Infer media type ----
+        # Videos have a measurable duration; still images report "N/A".
+        probe = subprocess.run(
+            [
+                "ffprobe", "-v", "error",
+                "-show_entries", "format=duration",
+                "-of", "default=noprint_wrappers=1:nokey=1",
+                str(src_path),
+            ],
+            capture_output=True,
+            text=True,
+            stdin=subprocess.DEVNULL,
+        )
+        try:
+            duration_val = float(probe.stdout.strip())
+            is_video = duration_val > 0.5  # single-frame "videos" are treated as images
+        except ValueError:
+            is_video = False  # "N/A" or empty → image
+
+        media.media_type = MediaItem.MediaType.VIDEO if is_video else MediaItem.MediaType.IMAGE
+
+        # ---- Generate thumbnail ----
+        if is_video:
             subprocess.run(
                 [
                     "ffmpeg", "-nostdin", "-y",
@@ -37,25 +58,8 @@ def generate_thumbnail(media_item_id: int) -> None:
                 capture_output=True,
                 stdin=subprocess.DEVNULL,
             )
-            # Probe clip duration while we have the file locally.
-            # Note: ffprobe does not support -nostdin; use stdin=DEVNULL instead.
-            result = subprocess.run(
-                [
-                    "ffprobe", "-v", "error",
-                    "-show_entries", "format=duration",
-                    "-of", "default=noprint_wrappers=1:nokey=1",
-                    str(src_path),
-                ],
-                capture_output=True,
-                text=True,
-                stdin=subprocess.DEVNULL,
-            )
-            try:
-                media.video_duration = float(result.stdout.strip())
-            except (ValueError, TypeError):
-                pass
+            media.video_duration = duration_val
         else:
-            # For images, use ffmpeg to produce a scaled JPEG
             subprocess.run(
                 [
                     "ffmpeg", "-nostdin", "-y",
@@ -68,7 +72,7 @@ def generate_thumbnail(media_item_id: int) -> None:
                 stdin=subprocess.DEVNULL,
             )
 
+        # Save thumbnail and all inferred fields in one write
         thumb_name = f"{media_item_id}_thumb.jpg"
-        media.thumbnail.save(thumb_name, ContentFile(out_path.read_bytes()), save=True)
-        if media.video_duration is not None:
-            media.save(update_fields=["video_duration"])
+        media.thumbnail.save(thumb_name, ContentFile(out_path.read_bytes()), save=False)
+        media.save(update_fields=["media_type", "video_duration", "thumbnail"])

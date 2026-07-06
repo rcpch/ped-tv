@@ -36,6 +36,14 @@ def _do_press(playlist) -> None:
 
         for index, item in enumerate(playlist.items.select_related("media_item")):
             media = item.media_item
+
+            if media.media_type is None:
+                raise ValueError(
+                    f'Media item "{media.title}" (id={media.pk}) has not been '
+                    "processed yet — thumbnail generation may still be running. "
+                    "Wait a moment and try pressing again."
+                )
+
             suffix = Path(media.file.name).suffix or ".bin"
             local_path = tmp / f"input_{index}{suffix}"
 

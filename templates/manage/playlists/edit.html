@@ -76,7 +76,7 @@
               {% endif %}
               <span>
                 <strong>{{ item.media_item.title }}</strong><br>
-                <small>{{ item.media_item.get_media_type_display }} — {{ item.media_item.provider }}</small>
+                <small>{{ item.media_item.get_media_type_display|default:"Processing…" }} — {{ item.media_item.provider }}</small>
               </span>
               {% if item.media_item.is_image %}
                 <form method="post" style="display:flex;align-items:center;gap:.25rem;white-space:nowrap">

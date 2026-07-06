@@ -9,7 +9,9 @@ class MediaItem(models.Model):
         VIDEO = "video", "Video"
         IMAGE = "image", "Image"
 
-    media_type = models.CharField(max_length=10, choices=MediaType.choices)
+    media_type = models.CharField(
+        max_length=10, choices=MediaType.choices, null=True, blank=True
+    )
     file = models.FileField(upload_to="media/files/")
     thumbnail = models.ImageField(upload_to="media/thumbnails/", blank=True)
     provider = models.ForeignKey(
