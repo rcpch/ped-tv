@@ -114,9 +114,24 @@ class PlaylistEditView(StaffRequiredMixin, TemplateView):
         ctx = super().get_context_data(**kwargs)
         playlist = self.get_playlist()
         ctx["playlist"] = playlist
-        ctx["items"] = playlist.items.select_related("media_item__provider")
+        items = list(playlist.items.select_related("media_item__provider"))
+        ctx["items"] = items
         ctx["available_media"] = MediaItem.objects.select_related("provider")
         ctx["media_form"] = MediaItemForm()
+
+        # Compute total playlist duration
+        total = 0.0
+        has_unknown = False
+        for item in items:
+            d = item.media_item.duration_seconds
+            if item.media_item.is_image:
+                d = item.effective_duration  # respects per-item override
+            if d is not None:
+                total += d
+            else:
+                has_unknown = True
+        ctx["total_duration"] = total
+        ctx["total_duration_approx"] = has_unknown
         return ctx
 
     def post(self, request, pk):

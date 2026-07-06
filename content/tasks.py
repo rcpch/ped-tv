@@ -35,7 +35,24 @@ def generate_thumbnail(media_item_id: int) -> None:
                 ],
                 check=True,
                 capture_output=True,
+                stdin=subprocess.DEVNULL,
             )
+            # Probe clip duration while we have the file locally
+            result = subprocess.run(
+                [
+                    "ffprobe", "-nostdin", "-v", "error",
+                    "-show_entries", "format=duration",
+                    "-of", "default=noprint_wrappers=1:nokey=1",
+                    str(src_path),
+                ],
+                capture_output=True,
+                text=True,
+                stdin=subprocess.DEVNULL,
+            )
+            try:
+                media.video_duration = float(result.stdout.strip())
+            except (ValueError, TypeError):
+                pass
         else:
             # For images, use ffmpeg to produce a scaled JPEG
             subprocess.run(
@@ -47,7 +64,10 @@ def generate_thumbnail(media_item_id: int) -> None:
                 ],
                 check=True,
                 capture_output=True,
+                stdin=subprocess.DEVNULL,
             )
 
         thumb_name = f"{media_item_id}_thumb.jpg"
         media.thumbnail.save(thumb_name, ContentFile(out_path.read_bytes()), save=True)
+        if media.video_duration is not None:
+            media.save(update_fields=["video_duration"])

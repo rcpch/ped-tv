@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load pedtv_tags %}
 {% block title %}Edit: {{ playlist.title }} — PED TV{% endblock %}
 {% block content %}
 <div class="nhsuk-grid-row">
@@ -10,6 +11,9 @@
       {% if playlist.is_main %}
         <span class="nhsuk-tag nhsuk-tag--blue nhsuk-u-margin-left-2">Main</span>
       {% endif %}
+      <span style="float:right;font-size:1rem;font-weight:400;color:#4c6272">
+        {% if items %}{{ total_duration|format_duration }}{% if total_duration_approx %}+{% endif %}{% endif %}
+      </span>
     </h1>
 
     {% if playlist.press_error %}
@@ -68,6 +72,13 @@
             <span>
               <strong>{{ item.media_item.title }}</strong><br>
               <small>{{ item.media_item.get_media_type_display }} — {{ item.media_item.provider }}</small>
+            </span>
+            <span style="font-size:.875rem;color:#4c6272;white-space:nowrap">
+              {% if item.media_item.is_image %}
+                {{ item.effective_duration|format_duration }}
+              {% else %}
+                {{ item.media_item.video_duration|format_duration }}
+              {% endif %}
             </span>
             <form method="post" style="margin-left:auto">
               {% csrf_token %}

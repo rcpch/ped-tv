@@ -23,6 +23,12 @@ class MediaItem(models.Model):
         blank=True,
         help_text="Display duration in seconds (images only)",
     )
+    # Probed from the file during thumbnail generation
+    video_duration = models.FloatField(
+        null=True,
+        blank=True,
+        help_text="Clip length in seconds (videos only, populated automatically)",
+    )
     title = models.CharField(max_length=200)
     uploaded_by = models.ForeignKey(
         User,
@@ -45,3 +51,10 @@ class MediaItem(models.Model):
     @property
     def is_image(self):
         return self.media_type == self.MediaType.IMAGE
+
+    @property
+    def duration_seconds(self):
+        """Duration in seconds: video clip length or image display time."""
+        if self.is_video:
+            return self.video_duration
+        return float(self.duration) if self.duration is not None else None
