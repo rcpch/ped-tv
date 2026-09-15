@@ -30,7 +30,7 @@ services:
       POSTGRES_USER: pedtv
       POSTGRES_PASSWORD: pedtv
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres-data:/var/lib/postgresql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U pedtv"]
       interval: 5s
