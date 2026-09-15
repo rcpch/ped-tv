@@ -3,7 +3,7 @@ name: Deploy on push to live
 on:
   push:
     branches:
-      - mbarton/azure
+      - live
 
 permissions:
   id-token: write
