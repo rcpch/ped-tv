@@ -1,10 +1,13 @@
 import os
-from pathlib import Path
 from dotenv import load_dotenv
-
-load_dotenv("envs/.env")
+from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load the env file if present (provided by docker compose in dev, volume-mounted
+# into the container in Azure). Environment variables already set take precedence,
+# and a missing file is silently ignored.
+load_dotenv(BASE_DIR / "envs" / ".env")
 
 SECRET_KEY = os.environ["SECRET_KEY"]
 
@@ -96,6 +99,29 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 STATICFILES_DIRS = [BASE_DIR / "static"]
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# ---------------------------------------------------------------------------
+# Logging
+# ---------------------------------------------------------------------------
+# Django's default logging only writes to the console when DEBUG is True, which
+# makes production 500s invisible in container logs. Log unhandled request
+# errors (with tracebacks) to stderr regardless of DEBUG.
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+        },
+    },
+    "loggers": {
+        "django.request": {
+            "handlers": ["console"],
+            "level": "ERROR",
+            "propagate": False,
+        },
+    },
+}
 
 LOGIN_URL = "/auth/login/"
 LOGIN_REDIRECT_URL = "/manage/"

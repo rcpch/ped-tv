@@ -1,0 +1,12 @@
+# Env files are provided at runtime (docker compose env_file in dev, volume
+# mount in Azure) — never bake them or their secrets into the image. This also
+# stops a dev DEBUG=True leaking into build-time collectstatic.
+envs/
+
+# Local artefacts and dev junk
+staticfiles/
+__pycache__/
+*.py[cod]
+.git/
+.venv/
+.envrc
