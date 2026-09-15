@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+python manage.py migrate
+
+gunicorn \
+    --bind=0.0.0.0:8000 \
+    --timeout 600 \
+    --workers 5 \
+    project.wsgi
