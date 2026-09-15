@@ -1,0 +1,29 @@
+name: Deploy on push to live
+
+on:
+  push:
+    branches:
+      - mbarton/azure
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Checkout GitHub Action"
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: "Login via Azure CLI"
+        uses: azure/login@7ddb5af1ef8758cf1353cf3b42f940aee27ba21c # v3
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: "Run CI script"
+        env:
+          AZURE_REGISTRY_NAME: ${{ secrets.AZURE_REGISTRY_NAME }}
+        run: s/ci

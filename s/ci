@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+az acr login --name ${AZURE_REGISTRY_NAME}
+
+cp .env.example .env
+
+docker compose build web
+
+azure_tag="${AZURE_REGISTRY_NAME}.azurecr.io/ped-tv-web:${GITHUB_SHA}"
+docker tag ped-tv-web:latest ${azure_tag}
+docker push ${azure_tag}
