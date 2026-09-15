@@ -14,4 +14,5 @@ dependencies = [
     "gunicorn>=23.0",
     "django-debug-toolbar>=4.4",
     "azure-identity>=1.19",
+    "python-dotenv>=1.2.3"
 ]
