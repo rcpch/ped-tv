@@ -57,16 +57,24 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "pedtv.wsgi.application"
 
-DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.postgresql",
-        "NAME": os.environ.get("DB_NAME", "pedtv"),
-        "USER": os.environ.get("DB_USER", "pedtv"),
-        "PASSWORD": os.environ.get("DB_PASSWORD", "pedtv"),
-        "HOST": os.environ.get("DB_HOST", "postgres"),
-        "PORT": os.environ.get("DB_PORT", "5432"),
-    }
+database_config: dict = {
+    # Custom backend (subclasses the stock PostgreSQL backend) that can inject a
+    # fresh Azure Entra ID token as the password on each new connection.
+    "ENGINE": "pedtv.db_backend",
+    "NAME": os.environ.get("DB_NAME", "pedtv"),
+    "USER": os.environ.get("DB_USER", "pedtv"),
+    "HOST": os.environ.get("DB_HOST", "postgres"),
+    "PORT": os.environ.get("DB_PORT", "5432"),
 }
+
+if os.environ.get("DB_USE_AAD_TOKEN", "false").lower() == "true":
+    # Authenticate with a managed identity token acquired per connection by the
+    # custom backend; no static password is needed.
+    database_config["USE_AAD_TOKEN"] = True
+else:
+    database_config["PASSWORD"] = os.environ.get("DB_PASSWORD", "pedtv")
+
+DATABASES = {"default": database_config}
 
 AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.UserAttributeSimilarityValidator"},

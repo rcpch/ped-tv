@@ -13,4 +13,5 @@ dependencies = [
     "whitenoise[brotli]>=6.8",
     "gunicorn>=23.0",
     "django-debug-toolbar>=4.4",
+    "azure-identity>=1.19",
 ]
