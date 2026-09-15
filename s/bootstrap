@@ -4,12 +4,12 @@ set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-echo "==> Copying .env.example to .env (if not already present)..."
-if [[ ! -f "$ROOT/.env" ]]; then
-  cp "$ROOT/.env.example" "$ROOT/.env"
-  echo "    .env created — edit it if needed."
+echo "==> Copying envs/.env.example to envs/.env (if not already present)..."
+if [[ ! -f "$ROOT/envs/.env" ]]; then
+  cp "$ROOT/envs/.env.example" "$ROOT/envs/.env"
+  echo "    envs/.env created — edit it if needed."
 else
-  echo "    .env already exists, skipping."
+  echo "    envs/.env already exists, skipping."
 fi
 
 echo "==> Building Docker images..."

@@ -6,7 +6,7 @@ services:
       - "8000:8000"
     volumes:
       - .:/app
-    env_file: .env
+    env_file: envs/.env
     depends_on:
       postgres:
         condition: service_healthy
@@ -18,7 +18,7 @@ services:
     command: python manage.py db_worker --no-reload
     volumes:
       - .:/app
-    env_file: .env
+    env_file: envs/.env
     depends_on:
       postgres:
         condition: service_healthy

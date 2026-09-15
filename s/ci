@@ -3,7 +3,7 @@ set -euo pipefail
 
 az acr login --name ${AZURE_REGISTRY_NAME}
 
-cp .env.example .env
+cp envs/.env.example envs/.env
 
 docker compose build web
 

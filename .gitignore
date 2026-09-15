@@ -1,5 +1,5 @@
 # Project-specific
-.env
+envs/.env
 staticfiles/
 static/nhsuk/
 uv.lock
