@@ -5,8 +5,11 @@
   {# Hero player #}
   <div class="nhsuk-hero nhsuk-u-margin-bottom-6">
     <div class="nhsuk-width-container">
-      <div class="nhsuk-hero__wrapper">
+      <div class="nhsuk-hero__wrapper nhsuk-u-padding-top-0">
         <h1 class="nhsuk-u-visually-hidden">{{ main_playlist.title }}</h1>
+        <p class="nhsuk-u-padding-5 nhsuk-u-margin-0">
+          PED-TV is a population health initiative to improve the health and wellbeing of local children and their families, by streaming educational content and signposting to local and national resources.
+        </p>
         <div id="player-container" data-hero-player style="position:relative;background:#000;max-width:100%">
           <video id="main-video"
                  style="width:100%;display:block"
@@ -24,40 +27,22 @@
             </button>
           </div>
         </div>
-        {% if main_playlist.mp4_file %}
-          <p class="nhsuk-u-margin-top-3">
-            <a href="{{ main_playlist.mp4_file.url }}" class="nhsuk-button nhsuk-button--secondary" download>
-              Download MP4
+        <p class="nhsuk-u-padding-3 nhsuk-u-margin-0">
+          <a href="{% url 'playlist' main_playlist.slug %}" class="nhsuk-button nhsuk-button--reverse" style="margin-right:8px">
+            View playlist
+          </a>
+          {% if main_playlist.mp4_file %}
+            <a href="{{ main_playlist.mp4_file.url }}" class="nhsuk-button nhsuk-button--reverse" download>
+              Download playlist as a single video
             </a>
-          </p>
-        {% endif %}
+          {% endif %}
+        </p>
+
+        <p class="nhsuk-u-padding-3 nhsuk-u-margin-0">
+          All resources on PED-TV have been shared with the permission of the owner, organisation or charity, with the intent that it is displayed in health care settings, such as emergency departments, outpatient departments or hospital wards.
+        </p>
       </div>
     </div>
-  </div>
-
-  <div class="nhsuk-width-container">
-      <p class="nhsuk-body nhsuk-u-margin-top-6">
-        PED-TV is a population health initiative to improve the health and wellbeing of local children and their families, by streaming educational content and signposting to local and national resources.
-
-        All resources on PED-TV have been shared with the permission of the owner, organisation or charity, with the intent that it is displayed in health care settings, such as emergency departments, outpatient departments or hospital wards.
-      </p>
-  </div>
-
-  {# Playlist list #}
-  <div class="nhsuk-width-container">
-    <h2 class="nhsuk-heading-m">All playlists</h2>
-    <ul class="nhsuk-list nhsuk-list--border">
-      <li>
-        <a href="{% url 'playlist' main_playlist.slug %}">
-          {{ main_playlist.title }} <strong>(main)</strong>
-        </a>
-      </li>
-      {% for pl in other_playlists %}
-        <li>
-          <a href="{% url 'playlist' pl.slug %}">{{ pl.title }}</a>
-        </li>
-      {% endfor %}
-    </ul>
   </div>
 
 {% else %}
