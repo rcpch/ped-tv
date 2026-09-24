@@ -7,6 +7,16 @@
   align-items: center;
 }
 
+/* Logo image replacing the service name in the header. The white plate
+   sits behind the logo only so it reads against the blue header. */
+.nhsuk-header__logo-image {
+  display: block;
+  background: #fff;
+  padding: 4px 8px;
+  max-height: 40px;
+  width: auto;
+}
+
 .nhsuk-header__navigation-list {
   align-items: center;
 }
