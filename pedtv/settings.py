@@ -140,6 +140,12 @@ if _storage_backend == "azure":
             "account_name": os.environ["AZURE_ACCOUNT_NAME"],
             "account_key": os.environ.get("AZURE_ACCOUNT_KEY"),
             "azure_container": os.environ.get("AZURE_CONTAINER", "pedtv-media"),
+            # Public host for media URLs. django-storages swaps this in for
+            # <account>.blob.core.windows.net but keeps the container in the
+            # path, so e.g. "pedtv.rcpch.tech" serves media from
+            # https://pedtv.rcpch.tech/<container>/<key> — point Fastly at the
+            # blob account for that path prefix and no URL rewriting is needed.
+            "custom_domain": os.environ.get("AZURE_CUSTOM_DOMAIN"),
         },
     }
 else:
