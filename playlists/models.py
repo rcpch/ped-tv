@@ -2,6 +2,8 @@ from django.db import models
 from django.contrib.auth import get_user_model
 from django.utils.text import slugify
 
+from .storages import attachment_storage
+
 User = get_user_model()
 
 
@@ -22,8 +24,12 @@ class Playlist(models.Model):
         help_text="Display this playlist on the front page",
     )
 
-    # Pressed artefacts
-    mp4_file = models.FileField(upload_to="playlists/mp4/", blank=True)
+    # Pressed artefacts. The MP4 gets its own storage that sets
+    # Content-Disposition: attachment so browsers download it instead of
+    # playing it inline.
+    mp4_file = models.FileField(
+        upload_to="playlists/mp4/", blank=True, storage=attachment_storage
+    )
     hls_manifest = models.FileField(upload_to="playlists/hls/", blank=True)
     poster = models.ImageField(upload_to="playlists/posters/", blank=True)
     press_task_id = models.CharField(max_length=64, blank=True)
