@@ -7,15 +7,18 @@
     <div class="nhsuk-width-container">
       <div class="nhsuk-hero__wrapper">
         <h1 class="nhsuk-u-visually-hidden">{{ main_playlist.title }}</h1>
-        <div id="player-container" style="position:relative;background:#000;max-width:100%">
+        <div id="player-container" data-hero-player style="position:relative;background:#000;max-width:100%">
           <video id="main-video"
                  style="width:100%;display:block"
                  poster="{% if main_playlist.poster %}{{ main_playlist.poster.url }}{% endif %}"
+                 data-hls-src="{{ main_playlist.hls_manifest.url }}"
+                 controls
                  playsinline
                  loop>
           </video>
           <div id="play-overlay"
-               style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;cursor:pointer">
+               data-play-overlay
+               style="position:absolute;top:0;left:0;right:0;bottom:3.5em;display:flex;align-items:center;justify-content:center;cursor:pointer">
             <button class="nhsuk-button" id="play-btn" style="font-size:1.25rem;padding:1rem 2rem">
               ▶ Play
             </button>
@@ -67,27 +70,8 @@
 
 {% block extra_js %}
 {% if main_playlist and main_playlist.hls_manifest %}
+{% load static %}
 <script src="https://cdn.jsdelivr.net/npm/hls.js@latest/dist/hls.min.js"></script>
-<script>
-(function () {
-  var video = document.getElementById('main-video');
-  var overlay = document.getElementById('play-overlay');
-  var src = "{{ main_playlist.hls_manifest.url }}";
-
-  if (Hls.isSupported()) {
-    var hls = new Hls();
-    hls.loadSource(src);
-    hls.attachMedia(video);
-  } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
-    video.src = src;
-  }
-
-  document.getElementById('play-btn').addEventListener('click', function () {
-    overlay.style.display = 'none';
-    video.play();
-    if (video.requestFullscreen) { video.requestFullscreen(); }
-  });
-})();
-</script>
+<script src="{% static 'js/hero-player.js' %}"></script>
 {% endif %}
 {% endblock %}
