@@ -11,8 +11,7 @@ azure_tag="${AZURE_REGISTRY_NAME}.azurecr.io/ped-tv-web:${GITHUB_SHA}"
 docker tag ped-tv-web:latest ${azure_tag}
 docker push ${azure_tag}
 
-az containerapp update \
+s/deploy-revision.py \
     --name ${AZURE_LIVE_APP_NAME} \
     --resource-group ${AZURE_RESOURCE_GROUP} \
-    --image ${azure_tag} \
-    --query 'properties.provisioningState'
+    --git-hash ${GITHUB_SHA}
