@@ -23,6 +23,13 @@ CSRF_TRUSTED_ORIGINS = [o.strip() for o in os.environ.get("CSRF_TRUSTED_ORIGINS"
 if os.environ.get("SECURE_PROXY_SSL_HEADER", "false").lower() == "true":
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
+# Trust the reverse proxy's X-Forwarded-Host header as the request's host, so
+# absolute URLs (password reset email links) use the public domain instead of
+# the internal container app name. Requires the proxy (Fastly) to actually send
+# X-Forwarded-Host; the forwarded host must also be listed in ALLOWED_HOSTS.
+# Leave false in dev where there is no proxy.
+USE_X_FORWARDED_HOST = os.environ.get("USE_X_FORWARDED_HOST", "false").lower() == "true"
+
 INSTALLED_APPS = [
     "django.contrib.admin",
     "django.contrib.auth",
