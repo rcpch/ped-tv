@@ -149,27 +149,31 @@ if _storage_backend == "azure":
         },
     }
 else:
-    # S3-compatible — MinIO in dev, swappable for Garage
+    # S3-compatible — Garage in dev (single node), Azure Blob in production
     #
-    # endpoint_url  — used for API calls inside Docker (minio:9000)
-    # custom_domain — used when building public URLs seen by the browser
-    #                 format: <host>/<bucket>  e.g. localhost:9000/pedtv-media
+    # endpoint_url  — used for API calls inside Docker (garage:9000)
+    # custom_domain — public URLs seen by the browser, served unsigned by
+    #                 Garage's website endpoint (anonymous reads):
+    #                 format: <bucket>.<public-host>
+    #                 e.g. http://pedtv-media.web.garage.localhost:3902/<key>
     _s3_bucket = os.environ.get("AWS_STORAGE_BUCKET_NAME", "pedtv-media")
-    _s3_public_host = os.environ.get("AWS_S3_PUBLIC_HOST", "localhost:9000")
+    _s3_public_host = os.environ.get("AWS_S3_PUBLIC_HOST", "web.garage.localhost:3902")
     _default_storage = {
         "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
         "OPTIONS": {
             "access_key": os.environ.get("AWS_ACCESS_KEY_ID", "minioadmin"),
-            "secret_key": os.environ.get("AWS_SECRET_ACCESS_KEY", "minioadmin"),
+            # Garage requires secrets >= 16 chars; this is the matching dev default
+            "secret_key": os.environ.get("AWS_SECRET_ACCESS_KEY", "minioadminminioadmin"),
             "bucket_name": _s3_bucket,
-            "endpoint_url": os.environ.get("AWS_S3_ENDPOINT_URL", "http://minio:9000"),
+            "endpoint_url": os.environ.get("AWS_S3_ENDPOINT_URL", "http://garage:9000"),
             "region_name": os.environ.get("AWS_S3_REGION_NAME", "us-east-1"),
             "file_overwrite": False,
-            "default_acl": "public-read",
-            # Disable signed URLs — files are public-read so no auth needed
+            # Garage implements neither ACLs nor bucket policies; public reads
+            # are served anonymously by its website endpoint instead (enabled
+            # in s/bootstrap), so no ACL headers and no signed URLs.
             "querystring_auth": False,
-            # Rewrite generated URLs to use the browser-visible host
-            "custom_domain": f"{_s3_public_host}/{_s3_bucket}",
+            # Rewrite generated URLs to the browser-visible website endpoint host
+            "custom_domain": f"{_s3_bucket}.{_s3_public_host}",
             "url_protocol": os.environ.get("AWS_S3_URL_PROTOCOL", "http:"),
         },
     }

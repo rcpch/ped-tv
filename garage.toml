@@ -1,0 +1,30 @@
+# Garage daemon config for the local dev stack (docker-compose.yml, `garage` service).
+# Reference: https://garagehq.deuxfleurs.fr/documentation/reference-manual/configuration/
+
+metadata_dir = "/var/lib/garage/meta"
+data_dir = "/var/lib/garage/data"
+# sqlite is more robust than the lmdb default against unclean dev-machine shutdowns
+db_engine = "sqlite"
+
+replication_factor = 1
+
+rpc_bind_addr = "[::]:3901"
+# Fixed dev-only secret: identifies this single-node cluster across restarts.
+rpc_secret = "2af5731320c42e48ac2e0748450fbba2cb1745c7f21467765f9078617ff428f7"
+
+[s3_api]
+# Must match AWS_S3_REGION_NAME (settings.py default: us-east-1)
+s3_region = "us-east-1"
+# Keep 9000 to match AWS_S3_ENDPOINT_URL (http://garage:9000)
+api_bind_addr = "[::]:9000"
+
+[s3_web]
+# Anonymous public-read endpoint for bucket content (vhost-style):
+#   http://<bucket>.web.garage.localhost:3902/<key>
+# `*.localhost` resolves to the loopback address, so no /etc/hosts entry is
+# needed. s/bootstrap enables the website on the media bucket.
+bind_addr = "[::]:3902"
+root_domain = ".web.garage.localhost"
+
+[admin]
+api_bind_addr = "[::]:3903"
