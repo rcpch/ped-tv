@@ -10,7 +10,7 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      minio:
+      garage:
         condition: service_healthy
 
   worker:
@@ -24,7 +24,7 @@ services:
         condition: service_healthy
 
   postgres:
-    image: postgres:18
+    image: docker.io/library/postgres:18
     environment:
       POSTGRES_DB: pedtv
       POSTGRES_USER: pedtv
@@ -37,25 +37,34 @@ services:
       timeout: 5s
       retries: 5
 
-  # S3-compatible object storage for local dev.
+  # S3-compatible object storage for local dev (Garage, single node).
   # In production, Azure Blob Storage is used (set STORAGE_BACKEND=azure).
-  minio:
-    image: minio/minio:latest
-    command: server /data --console-address ":9001"
-    ports:
-      - "9000:9000"
-      - "9001:9001"  # MinIO console
+  garage:
+    image: docker.io/dxflrs/garage:v2.5.0
+    # The image is built FROM scratch (no shell) — exec-form command only.
+    #   --single-node     auto-configure a single-node cluster layout
+    #   --default-bucket  create the default key + bucket from GARAGE_DEFAULT_*
+    command: ["/garage", "server", "--single-node", "--default-bucket"]
     environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
+      # Must match the AWS_* values in envs/.env (these are the settings.py
+      # defaults). Garage accepts arbitrary access-key IDs but requires
+      # secret keys of at least 16 characters.
+      GARAGE_DEFAULT_ACCESS_KEY: minioadmin
+      GARAGE_DEFAULT_SECRET_KEY: minioadminminioadmin
+      GARAGE_DEFAULT_BUCKET: pedtv-media
     volumes:
-      - minio-data:/data
+      - garage-data:/var/lib/garage
+      - ./garage.toml:/etc/garage.toml:ro
+    ports:
+      - "9000:9000"  # S3 API (signed requests; used by Django inside Docker)
+      - "3902:3902"  # website endpoint (anonymous public media URLs)
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      # No shell or curl in the image — use the garage CLI over local RPC.
+      test: ["CMD", "/garage", "status"]
       interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 12
 
 volumes:
   postgres-data:
-  minio-data:
+  garage-data:
